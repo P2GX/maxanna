@@ -4,11 +4,11 @@ import { CommonModule } from '@angular/common';
 
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
-import { OrcidDialogComponent } from './orcid-dialog.component';
+import { OrcidDialogComponent } from 'ng-hpo-uikit';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { FormsModule } from '@angular/forms';
 import {MatCheckboxModule } from '@angular/material/checkbox'
-
+import { openUrl } from '@tauri-apps/plugin-opener';
 import { MatIcon } from "@angular/material/icon";
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
@@ -105,25 +105,34 @@ export class HomeComponent {
   }
 
 
-  async setBiocuratorOrcid(): Promise<void>{
-    const currentOrcid = this.biocuratorOrcid();
+  setBiocuratorOrcid(): void {
     const dialogRef = this.dialog.open(OrcidDialogComponent, {
       width: '500px',
+      disableClose: true, 
       data: { 
-        currentOrcid: currentOrcid
+        currentOrcid: this.biocuratorOrcid()
       }
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    // this subscribes to the @output/emit of the dialog and opens
+    // the ORCID website in the system browser
+    dialogRef.componentInstance.externalLinkClicked.subscribe((url: string) => {
+      this.handleExternalNavigation(url);
+    });
+
+    dialogRef.afterClosed().subscribe((result: string | undefined) => {
+      // If the user cancelled or cleared the input, exit cleanly
       if (!result) return;
 
-      this.ngZone.run(async () => {
-     //    const updatedStatus = await this.configService.saveCurrentOrcid(result);
-     //    this.statusService.state.set(updatedStatus); 
-      });
+      // Update the reactive signal state
+      this.biocuratorOrcid.set(result);
     });
   }
 
+  // launch the link in the user's default browser
+  private async handleExternalNavigation(url: string): Promise<void> {
+    await openUrl(url);
+  }
 
   async chooseJsonTemplateFile(): Promise<void> {
   
