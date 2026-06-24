@@ -24,17 +24,33 @@
     <div class="home-card">
         
         <div class="home-card__section">
-            <h2 class="home-card__section-label">Ontology Setup</h2>
-            <div class="home-card__row">
-                <div class="action-with-help">
-                    <button (click)="loadHpo()" class="btn-outline-primary home-card__action-btn">
-                    </button>
-                </div>
-                
-                <div class="hpo-status">
-                
-                </div>
-            </div>
+            <h2 class="home-card__section-label">HPO Setup</h2>
+            <ui-load-ontology
+                title="Ontology"
+                label="HPO"
+                [isLoading]="statusService.hpoLoading()"
+                [isLoaded]="statusService.hpoLoaded()"
+                [statusMessage]="hpoMessage()"
+                [termCount]="statusService.nHpoTerms()"
+                helpUrl="[https://p2gx.github.io/phenoboard/help/start.html#load-the-hpo](https://p2gx.github.io/phenoboard/help/start.html#load-the-hpo)"
+                [helpLines]="['Select the local hp.json file from your machine.']"
+                (onLoad)="loadHpo()">
+                </ui-load-ontology>
+        </div>
+
+         <div class="home-card__section">
+            <h2 class="home-card__section-label">MAxO Setup</h2>
+            <ui-load-ontology
+                title="Ontology"
+                label="HPO"
+                [isLoading]="statusService.maxoLoading()"
+                [isLoaded]="statusService.maxoLoaded()"
+                [statusMessage]="hpoMessage()"
+                [termCount]="statusService.nMaxoTerms()"
+                helpUrl="[https://p2gx.github.io/phenoboard/help/start.html#load-the-hpo](https://p2gx.github.io/phenoboard/help/start.html#load-the-hpo)"
+                [helpLines]="['Select the local maxo.json file from your machine.']"
+                (onLoad)="loadMaxo()">
+            </ui-load-ontology>
         </div>
 
         <div class="home-card__section">

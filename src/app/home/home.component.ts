@@ -4,20 +4,23 @@ import { CommonModule } from '@angular/common';
 
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
-import { OrcidDialogComponent } from 'ng-hpo-uikit';
+import { OrcidDialogComponent, NotificationService } from 'ng-hpo-uikit';
+import { LoadOntologyComponent } from 'ng-hpo-uikit';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { FormsModule } from '@angular/forms';
-import {MatCheckboxModule } from '@angular/material/checkbox'
+import { MatCheckboxModule } from '@angular/material/checkbox'
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { MatIcon } from "@angular/material/icon";
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { AppStatusService } from '../services/app-status-service';
+import { ConfigService } from '../services/config-service';
 
 
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, MatProgressBarModule, FormsModule, MatCheckboxModule, MatIcon, MatProgressSpinnerModule],
+  imports: [CommonModule, MatProgressBarModule, FormsModule, LoadOntologyComponent,  MatCheckboxModule, MatIcon, MatProgressSpinnerModule],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
@@ -27,6 +30,9 @@ export class HomeComponent {
 
   private router= inject(Router);
   private dialog = inject(MatDialog);
+  private notificationService = inject(NotificationService);
+  public statusService = inject(AppStatusService);
+  private configService = inject(ConfigService);
 
   private ngZone = inject(NgZone);
   private cancelMessage = signal<string | null>(null);
@@ -69,10 +75,25 @@ export class HomeComponent {
  
     biocuratorOrcid = signal("na");
 
-  async loadHpo(): Promise<void> {
-    
-    
-  }
+    async loadHpo(): Promise<void> {
+      try {
+        await this.configService.loadHPO();
+      } catch (error: unknown) {
+        this.notificationService.showError(
+          `Failed to load HPO: ${error instanceof Error ? error.message : error}`
+        );
+      } 
+    }
+
+      async loadMaxo(): Promise<void> {
+      try {
+        await this.configService.loadMAxO();
+      } catch (error: unknown) {
+        this.notificationService.showError(
+          `Failed to load MAxO: ${error instanceof Error ? error.message : error}`
+        );
+      } 
+    }
 
   // select an Excel file with a cohort of phenopackets
   async chooseExistingTemplateFile(): Promise<void> {
@@ -121,11 +142,13 @@ export class HomeComponent {
     });
 
     dialogRef.afterClosed().subscribe((result: string | undefined) => {
-      // If the user cancelled or cleared the input, exit cleanly
-      if (!result) return;
+      if (!result) {
+        this.notificationService.showWarning("Unable to set the curator ORCID.");
+        return;
+      }
 
-      // Update the reactive signal state
       this.biocuratorOrcid.set(result);
+      this.notificationService.showSuccess(`Set curator ORCID to ${result}.`);
     });
   }
 
