@@ -26,13 +26,12 @@
         <div class="home-card__section">
             <h2 class="home-card__section-label">HPO Setup</h2>
             <ui-load-ontology
-                title="Ontology"
                 label="HPO"
                 [isLoading]="statusService.hpoLoading()"
                 [isLoaded]="statusService.hpoLoaded()"
                 [statusMessage]="hpoMessage()"
                 [termCount]="statusService.nHpoTerms()"
-                helpUrl="[https://p2gx.github.io/phenoboard/help/start.html#load-the-hpo](https://p2gx.github.io/phenoboard/help/start.html#load-the-hpo)"
+                helpUrl="https://p2gx.github.io/phenoboard/help/start.html#load-the-hpo"
                 [helpLines]="['Select the local hp.json file from your machine.']"
                 (onLoad)="loadHpo()">
                 </ui-load-ontology>
@@ -41,13 +40,12 @@
          <div class="home-card__section">
             <h2 class="home-card__section-label">MAxO Setup</h2>
             <ui-load-ontology
-                title="Ontology"
-                label="HPO"
+                label="MAxO"
                 [isLoading]="statusService.maxoLoading()"
                 [isLoaded]="statusService.maxoLoaded()"
-                [statusMessage]="hpoMessage()"
+                [statusMessage]="maxoMessage()"
                 [termCount]="statusService.nMaxoTerms()"
-                helpUrl="[https://p2gx.github.io/phenoboard/help/start.html#load-the-hpo](https://p2gx.github.io/phenoboard/help/start.html#load-the-hpo)"
+                helpUrl="https://p2gx.github.io/phenoboard/help/start.html#load-the-hpo"
                 [helpLines]="['Select the local maxo.json file from your machine.']"
                 (onLoad)="loadMaxo()">
             </ui-load-ontology>
@@ -71,8 +69,8 @@
                    
                     </div> 
                     <div class="tool-info">
-                        <span class="tool-title">Continue curation</span>
-                        <span class="tool-description">{{ jsonTemplateFileMessage() || 'Select a .json file' }}</span>
+                        <span class="tool-title">Continue curation (UPDATE ME!)</span>
+                        <span class="tool-description">{{ 'Select a .json file' }}</span>
                     </div>
                 </div>
         </div>

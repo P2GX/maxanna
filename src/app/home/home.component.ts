@@ -40,38 +40,39 @@ export class HomeComponent {
 
 
   hpoMessage = computed(() => {
-   // const s = this.statusService.state();
     const cancel = this.cancelMessage();
-   // if (s.hpoLoaded) {
-    //  return `${s.hpoVersion} (${s.nHpoTerms})` || "Loaded";
-   // }
-   // if (this.statusService.hpoLoading()) return "Loading hp.json ...";
-    if (cancel) return cancel;
+    const status = this.statusService;
+    if (status.hpoLoaded()) {
+      const version = status.hpoVersion();
+      const count = status.nHpoTerms();
+      return version && count ? `${version} (${count})` : 'Loaded';
+    } else if (status.hpoLoading()) {
+      return "Loading hp.json ...";
+    } else if (cancel) return cancel;
     return "uninitialized";
   });
 
-  templateFileMessage = computed(()=> {
-   // const path = this.statusService.state().ptTemplatePath;
-   const path = "na"
-    return path ? path : this.NOT_INIT;
-  });
-  NOT_INIT = "not initialized";
-  jsonTemplateFileMessage = signal(this.NOT_INIT);
+    maxoMessage = computed(() => {
+      const cancel = this.cancelMessage();
+      const status = this.statusService;
+      if (status.maxoLoaded()) {
+        const version = status.maxoVersion();
+        const count = status.nMaxoTerms();
+        return version && count ? `${version} (${count})` : 'Loaded';
+      } else if (status.maxoLoading()) {
+        return "Loading maxo.json ...";
+      } else if (cancel) return cancel;
+      return "uninitialized";
+    });
 
-  //ptTemplateLoaded = computed(() => !!this.statusService.state().ptTemplatePath);
-    ptTemplateLoaded = false;
-  
-  // Updated by checkbox in front end, should we update outdated HPO loabels upon import of Excel legacy files?
-  updateLabels = false;
-  
-  newTemplateMessage = this.NOT_INIT;
+
  
   data = "?";
 
   progressValue = 0;
   isRunning = false;
 
-  //readonly biocuratorOrcid = computed(() => this.statusService.state().biocuratorOrcid);
+ 
  
     biocuratorOrcid = signal("na");
 
@@ -87,6 +88,7 @@ export class HomeComponent {
 
       async loadMaxo(): Promise<void> {
       try {
+        console.log("Load maxo")
         await this.configService.loadMAxO();
       } catch (error: unknown) {
         this.notificationService.showError(

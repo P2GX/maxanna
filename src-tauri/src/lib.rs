@@ -7,7 +7,7 @@ use tauri::{AppHandle, Emitter, Runtime, WindowEvent};
 use tauri_plugin_dialog::{DialogExt};
 use std::{collections::HashMap, fs, sync::{Arc, Mutex}};
 use tauri_plugin_fs::{init};
-use ga4ghphetools::tauri::{get_full_path_as_str, load_ontology, OntologyLoadEvent};
+use ga4ghphetools::tauri::{pick_file_and_process, load_ontology, OntologyLoadEvent};
 use crate::maxanna::MaxAnnaSingleton;
 
 struct AppState {
@@ -49,89 +49,60 @@ pub fn run() {
 
 
 
-
 /// Load the Human Phenotype Ontology (HPO)
 #[tauri::command]
 async fn load_hpo(
     app: AppHandle,
     state: tauri::State<'_, Arc<AppState>>,
 ) -> Result<(), String> {
-    let state_handle = state.inner().clone(); 
-    let app_handle = app.clone();
-
-    // Notify Angular that HPO is loading
+    let state_handle = state.inner().clone();
     let _ = app.emit("hpo-load-event", OntologyLoadEvent::loading());
-
-    tauri::async_runtime::spawn(async move {
-        match app_handle.dialog().file().blocking_pick_file() {
-            Some(file) => {
-                match get_full_path_as_str(file) {
-                    Ok(hpo_json_path) => {
-                        match load_ontology(&hpo_json_path) {
-                            Ok(ontology) => {
-                                let mut singleton = state_handle.maxanna.lock().unwrap();
-                                let n_terms = ontology.len();
-                                singleton.set_hpo(ontology, &hpo_json_path);
-                                let _ = app_handle.emit("hpo-load-event", OntologyLoadEvent::success("HPO loaded".to_string(), n_terms));
-                            },
-                            Err(_) => { 
-                                let _ = app_handle.emit("hpo-load-event", OntologyLoadEvent::cancel());
-                            }
-                        }
-                    },
-                    Err(e) => {
-                        let _ = app_handle.emit("hpo-load-event", OntologyLoadEvent::error(e));
-                    }
-                }
+    pick_file_and_process(app, "hpo-load-event", move |hpo_json_path, app_handle| async move {
+        match load_ontology(&hpo_json_path) {
+            Ok(ontology) => {
+                let mut singleton = state_handle.maxanna.lock().unwrap();
+                let n_terms = ontology.len();
+                singleton.set_hpo(ontology, &hpo_json_path);
+                let _ = app_handle.emit(
+                    "hpo-load-event", 
+                    OntologyLoadEvent::success("HPO loaded".to_string(), n_terms)
+                );
             },
-            None => {
-                let _ = app_handle.emit("hpo-load-event", OntologyLoadEvent::error("User canceled HPO loading".to_string()));
-            },
-        };
+            Err(_) => { 
+                let _ = app_handle.emit("hpo-load-event", OntologyLoadEvent::cancel());
+            }
+        }
     });
+
     Ok(())
 }
 
-/// Load the Medical Action Ontology (MAXO)
-/// 
+
+
+/// Load the Medical Action Ontology (MAxO)
 #[tauri::command]
 async fn load_maxo(
     app: AppHandle,
     state: tauri::State<'_, Arc<AppState>>,
 ) -> Result<(), String> {
-    let state_handle = state.inner().clone(); 
-    let app_handle = app.clone();
-    /* 
-    // Notify Angular that MAXO is loading
+    let state_handle = state.inner().clone();
     let _ = app.emit("maxo-load-event", OntologyLoadEvent::loading());
-
-    tauri::async_runtime::spawn(async move {
-        match app_handle.dialog().file().blocking_pick_file() {
-            Some(file) => {
-                match get_full_path_as_str(file) {
-                    Ok(maxo_json_path) => {
-                        match ontology_loader::load_maxo_ontology(&maxo_json_path) {
-                            Ok(ontology) => {
-                                let mut singleton = state_handle.phenoboard.lock().unwrap();
-                                singleton.set_maxo(Arc::new(ontology), &maxo_json_path);
-                                
-                                let _ = app_handle.emit("maxo-load-event", OntologyLoadEvent::success(singleton.get_maxo_status()));
-                            },
-                            Err(_) => { 
-                                let _ = app_handle.emit("maxo-load-event", OntologyLoadEvent::cancel());
-                            }
-                        }
-                    },
-                    Err(e) => {
-                        let _ = app_handle.emit("maxo-load-event", OntologyLoadEvent::error(e));
-                    }
-                }
+    pick_file_and_process(app, "maxo-load-event", move |maxo_json_path, app_handle| async move {
+        match load_ontology(&maxo_json_path) {
+            Ok(ontology) => {
+                let mut singleton = state_handle.maxanna.lock().unwrap();
+                let n_terms = ontology.len();
+                singleton.set_maxo(ontology, &maxo_json_path);
+                let _ = app_handle.emit(
+                    "maxo-load-event", 
+                    OntologyLoadEvent::success("MAxO loaded".to_string(), n_terms)
+                );
             },
-            None => {
-                let _ = app_handle.emit("maxo-load-event", OntologyLoadEvent::error("User canceled MAXO loading".to_string()));
-            },
-        };
+            Err(_) => { 
+                let _ = app_handle.emit("maxo-load-event", OntologyLoadEvent::cancel());
+            }
+        }
     });
-    */
+
     Ok(())
 }

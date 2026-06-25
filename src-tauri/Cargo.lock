@@ -1649,6 +1649,8 @@ dependencies = [
  "reqwest",
  "serde",
  "serde_json",
+ "tauri",
+ "tauri-plugin-dialog",
  "tauri-plugin-fs",
  "tera",
  "urlencoding",
@@ -2765,7 +2767,7 @@ dependencies = [
 
 [[package]]
 name = "maxanna"
-version = "0.0.4"
+version = "0.0.5"
 dependencies = [
  "dirs",
  "fenominal",
@@ -4139,6 +4141,9 @@ dependencies = [
  "ashpd",
  "block2",
  "dispatch2",
+ "glib-sys",
+ "gobject-sys",
+ "gtk-sys",
  "js-sys",
  "log",
  "objc2",

@@ -5,7 +5,19 @@ import { invoke } from '@tauri-apps/api/core';
 import { ask } from '@tauri-apps/plugin-dialog';
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { NotificationService } from 'ng-hpo-uikit';
-  import { WritableSignal } from '@angular/core';
+import { WritableSignal } from '@angular/core';
+
+
+// Corresponds to OntologyLoadEvent in ga4ghphetools
+interface OntologyLoadEvent {
+    status: 'loading' | 'success' | 'error' | 'cancel';
+    payload?: {
+      statusMessage?: string;
+      termCount?: number;
+      errorMessage?: string;
+    };
+  }
+
 
 @Injectable({ providedIn: 'root' })
 export class AppStatusService {
@@ -36,29 +48,31 @@ export class AppStatusService {
 
 
  private async setupListeners() {
-  // Bind the HPO Stream
-  await this.registerOntologyListener({
-    channel: 'hpo-load-event',
-    loadingSignal: this.hpoLoading,
-    loadedSignal: this.hpoLoaded,
-    versionSignal: this.hpoVersion,
-    countSignal: this.nHpoTerms,
-    errorContext: 'HPO'
-  });
+    // Bind the HPO Stream
+    await this.registerOntologyListener({
+      channel: 'hpo-load-event',
+      loadingSignal: this.hpoLoading,
+      loadedSignal: this.hpoLoaded,
+      versionSignal: this.hpoVersion,
+      countSignal: this.nHpoTerms,
+      errorContext: 'HPO'
+    });
 
-  // Bind the MAXO Stream 
-  await this.registerOntologyListener({
-    channel: 'maxo-load-event',
-    loadingSignal: this.maxoLoading,
-    loadedSignal: this.maxoLoaded,
-    versionSignal: this.maxoVersion,
-    countSignal: this.nMaxoTerms,
-    errorContext: 'MAXO'
-  });
-}
+    // Bind the MAXO Stream 
+    await this.registerOntologyListener({
+      channel: 'maxo-load-event',
+      loadingSignal: this.maxoLoading,
+      loadedSignal: this.maxoLoaded,
+      versionSignal: this.maxoVersion,
+      countSignal: this.nMaxoTerms,
+      errorContext: 'MAXO'
+    });
+  }
+
+
 
 /**
- * Registers a generic Tauri event listener for ontology loading
+ * Registers a generic Tauri event listener for ontology loading (HPO or MAxO)
  */
 private async registerOntologyListener(config: {
   channel: string;
@@ -68,11 +82,9 @@ private async registerOntologyListener(config: {
   countSignal: WritableSignal<number>;
   errorContext: string;
 }) {
+ 
   await listen(config.channel, (event) => {
-    const { status, payload } = event.payload as { 
-      status: 'loading' | 'success' | 'error' | 'cancel';
-      payload?: string | { statusMessage?: string; errorMessage?: string }; 
-    };
+    const { status, payload } = event.payload as OntologyLoadEvent;
 
     this.ngZone.run(() => {
       switch (status) {
@@ -84,9 +96,10 @@ private async registerOntologyListener(config: {
         case 'success':
           config.loadingSignal.set(false);
           config.loadedSignal.set(true);
-          
-          const versionInfo = typeof payload === 'object' ? payload?.statusMessage : payload;
-          config.versionSignal.set(versionInfo || 'Loaded');
+          const versionInfo = payload?.statusMessage || 'Loaded';
+          const totalTerms = payload?.termCount ?? 0;
+          config.countSignal.set(totalTerms);
+          config.versionSignal.set(versionInfo);
           break;
 
         case 'error':

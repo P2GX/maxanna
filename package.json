@@ -1,6 +1,6 @@
 {
   "name": "maxanna",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "scripts": {
     "ng": "ng",
     "start": "nx serve maxanna --port 1420",

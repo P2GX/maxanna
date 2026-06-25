@@ -1,6 +1,6 @@
 [package]
 name = "maxanna"
-version = "0.0.4"
+version = "0.0.5"
 description = "Curate MAxO Annotations"
 authors = ["Peter N Robinson"]
 edition = "2021"

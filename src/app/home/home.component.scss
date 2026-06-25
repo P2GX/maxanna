@@ -73,17 +73,17 @@
   }
 }
 
-// Main card
 .home-card {
   background: white;
-  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.05);  // shadow-xl
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.05);
   border-radius: 1rem;
   border: 1px solid #f3f4f6;
   overflow: hidden;
 }
 
 .home-card__section {
-  padding: 2rem;
+  // REDUCED: Dropped vertical padding from 2rem to 1rem (keeps 2rem on sides)
+  padding: 1rem 2rem; 
 
   & + & {
     border-top: 1px solid #f9fafb;
@@ -100,8 +100,12 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #9ca3af;
-  margin-bottom: 1rem;
+  
+  margin-top: 0;
+  margin-bottom: 0.375rem; 
 }
+
+
 
 .home-card__row {
   display: flex;
